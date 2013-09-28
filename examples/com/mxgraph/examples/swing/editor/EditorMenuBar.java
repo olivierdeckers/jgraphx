@@ -18,6 +18,7 @@ import com.mxgraph.analysis.StructuralException;
 import com.mxgraph.analysis.mxGraphProperties.GraphType;
 import com.mxgraph.analysis.mxAnalysisGraph;
 import com.mxgraph.analysis.mxGraphProperties;
+import com.mxgraph.analysis.mxGraphQuality;
 import com.mxgraph.analysis.mxGraphStructure;
 import com.mxgraph.analysis.mxTraversal;
 import com.mxgraph.costfunction.mxCostFunction;
@@ -498,7 +499,18 @@ public class EditorMenuBar extends JMenuBar
 		menu.add(editor.bind("Get sources", new AnalyzeGraph(AnalyzeType.GET_SOURCES, aGraph)));
 		menu.add(editor.bind("Get sinks", new AnalyzeGraph(AnalyzeType.GET_SINKS, aGraph)));
 		menu.add(editor.bind("Is biconnected", new AnalyzeGraph(AnalyzeType.IS_BICONNECTED, aGraph)));
-
+		
+		// Creates the quality menu
+		menu = add(new JMenu("Quality"));
+		final mxAnalysisGraph ag = aGraph;
+		menu.add(editor.bind("Edge crossings", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent paramActionEvent) {
+				System.out.println(mxGraphQuality.edgeCrossings(ag));
+				
+			}
+		}));
+		
 		// Creates the help menu
 		menu = add(new JMenu(mxResources.get("help")));
 
