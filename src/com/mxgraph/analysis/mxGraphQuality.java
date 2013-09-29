@@ -32,6 +32,19 @@ public class mxGraphQuality {
 		return crossings;
 	}
 	
+	public static int edgeBends(mxGraph graph) {
+		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+		
+		int bends = 0;
+		for(int i=0; i<edges.length; i++) {
+			mxCell edge = (mxCell) edges[i];
+			if(edge.getGeometry().getPoints() != null)
+				bends += edge.getGeometry().getPoints().size();
+		}
+		
+		return bends;
+	}
+	
 	private static boolean segmentsIntersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
 		double d = (y4-y3) * (x2-x1) - (x4-x3) * (y2-y1);
 		

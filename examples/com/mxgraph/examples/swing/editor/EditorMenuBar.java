@@ -506,8 +506,8 @@ public class EditorMenuBar extends JMenuBar
 		menu.add(editor.bind("Edge crossings", new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent paramActionEvent) {
-				System.out.println(mxGraphQuality.edgeCrossings(ag));
-				
+				System.out.println(mxGraphQuality.edgeCrossings(ag.getGraph()) + " crossings");
+				System.out.println(mxGraphQuality.edgeBends(ag.getGraph()) + " bends");
 			}
 		}));
 		
