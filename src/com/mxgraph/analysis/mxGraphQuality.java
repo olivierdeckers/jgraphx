@@ -1,14 +1,57 @@
 package com.mxgraph.analysis;
 
+import java.util.List;
+
 import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGeometry;
+import com.mxgraph.model.mxICell;
+import com.mxgraph.model.mxIGraphModel;
+import com.mxgraph.util.mxPoint;
+import com.mxgraph.view.mxGraph;
 
 public class mxGraphQuality {
 	
 	public static final double EPSILON = 1e-8;
+	
+	private static mxGraph bendPromotion(mxGraph graph) {
+		mxGraph copy = new mxGraph();
+		copy.addCells(graph.cloneCells(graph.getChildCells(graph.getDefaultParent())));
+		graph = copy;
+		
+		for(Object oEdge : graph.getChildEdges(graph.getDefaultParent())) {
+			mxCell edge = (mxCell) oEdge;
+			if(edge.getGeometry().getPoints() != null) {
+				List<mxPoint> controlPoints = edge.getGeometry().getPoints();
+				
+				mxICell from = edge.getSource();
+				for(int i=0; i<controlPoints.size(); i++) {
+					mxPoint point = controlPoints.get(i);
+					mxCell extraCell = new mxCell();
+					extraCell.setVertex(true);
+					extraCell.setGeometry(new mxGeometry(point.getX(), point.getY(), 0, 0));
+					graph.addCell(extraCell);
+					
+					mxCell extraEdge = new mxCell();
+					extraEdge.setEdge(true);
+					graph.addEdge(extraEdge, graph.getDefaultParent(), from, extraCell, null);
+					
+					from = extraCell;
+				}
+				
+				mxCell extraEdge = new mxCell();
+				extraEdge.setEdge(true);
+				graph.addEdge(extraEdge, graph.getDefaultParent(), from, edge.getTarget(), null);
+				
+				graph.removeCells(new Object[] {edge});
+			}
+		}
+		
+		return graph;
+	}
 
-	public static int edgeCrossings(mxAnalysisGraph graph) {
-		//TODO eerst bend promotion doen?
-		Object[] edges = graph.getChildEdges(graph.getGraph().getDefaultParent());
+	public static int edgeCrossings(mxGraph graph) {
+		graph = bendPromotion(graph);
+		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
 		
 		int crossings = 0;
 		for(int i=0; i<edges.length; i++) {
