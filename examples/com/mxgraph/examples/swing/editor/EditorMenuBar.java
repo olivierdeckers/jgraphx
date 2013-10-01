@@ -503,11 +503,10 @@ public class EditorMenuBar extends JMenuBar
 		// Creates the quality menu
 		menu = add(new JMenu("Quality"));
 		final mxAnalysisGraph ag = aGraph;
-		menu.add(editor.bind("Edge crossings", new AbstractAction() {
+		menu.add(editor.bind("Assess quality", new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent paramActionEvent) {
-				System.out.println(mxGraphQuality.edgeCrossings(ag.getGraph()) + " crossings");
-				System.out.println(mxGraphQuality.edgeBends(ag.getGraph()) + " bends");
+				mxGraphQuality.assess(ag.getGraph());
 			}
 		}));
 		
