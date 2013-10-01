@@ -148,17 +148,12 @@ public class mxGraphQuality {
 		return Math.acos(dotProduct);
 	}
 
-	public static int edgeBends(mxGraph graph) {
-		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+	public static double edgeBends(mxGraph graph) {
+		int m = graph.getChildEdges(graph.getDefaultParent()).length;
+		mxGraph bendPromotedGraph = bendPromotion(graph);
+		int mprime = bendPromotedGraph.getChildEdges(bendPromotedGraph.getDefaultParent()).length;
 		
-		int bends = 0;
-		for(int i=0; i<edges.length; i++) {
-			mxCell edge = (mxCell) edges[i];
-			if(edge.getGeometry().getPoints() != null)
-				bends += edge.getGeometry().getPoints().size();
-		}
-		
-		return bends;
+		return 1 - (mprime - m) / (double) mprime;
 	}
 	
 	private static boolean segmentsIntersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
