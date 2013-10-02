@@ -5,12 +5,11 @@ import java.util.List;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
 import com.mxgraph.model.mxICell;
+import com.mxgraph.util.mxGeometricUtils;
 import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
 
 public class mxGraphQuality {
-	
-	public static final double EPSILON = 1e-8;
 	
 	public static final void assess(mxGraph graph) {
 		System.out.println("crossings: " + mxGraphQuality.edgeCrossings(graph));
@@ -64,7 +63,7 @@ public class mxGraphQuality {
 			for(int j = i+1; j<edges.length; j++) {
 				mxCell edge2 = (mxCell) edges[j];
 				
-				if(segmentsIntersect(edge1.getSource().getGeometry().getX(),
+				if(mxGeometricUtils.segmentsIntersect(edge1.getSource().getGeometry().getX(),
 						edge1.getSource().getGeometry().getY(),
 						edge1.getTarget().getGeometry().getX(),
 						edge1.getTarget().getGeometry().getY(),
@@ -156,20 +155,7 @@ public class mxGraphQuality {
 		return 1 - (mprime - m) / (double) mprime;
 	}
 	
-	private static boolean segmentsIntersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
-		double d = (y4-y3) * (x2-x1) - (x4-x3) * (y2-y1);
-		
-		if(d == 0) // parallel
-			return false;
-		
-		double a = ((x4-x3) * (y1-y3) - (y4-y3) * (x1-x3)) / d;
-		double b = ((x3-x1) * (y2-y1) - (y3-y1) * (x2-x1)) / d;
-		
-		if(a < EPSILON || a > 1-EPSILON)
-			return false;
-		if(b < EPSILON || b > 1-EPSILON)
-			return false;
-		
-		return true;
-	}
+	
+	
+	
 }
