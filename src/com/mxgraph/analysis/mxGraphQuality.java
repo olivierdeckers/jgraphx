@@ -134,6 +134,90 @@ public class mxGraphQuality {
 		return 1 - (mprime - m) / (double) mprime;
 	}
 	
+	public static double symmetry(mxGraph graph) {
+		return symmetry(graph, 3, 10);
+	}
+	
+	public static double symmetry(mxGraph graph, int minSymEdges, int tolerance) {
+		double totalArea = 0;
+		double totalSym = 0;
+		graph = bendPromotion(graph);
+		//TODO crosses promotion
+		
+		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+		
+		for(int i=0; i<edges.length; i++) {
+			mxCell edge = (mxCell) edges[i];
+			
+			double subSym = 0;
+			double subArea = 0; //TODO calculate convex hull of subgraph
+			int subgraphSize = 0;
+			for(int j=0; j<edges.length; j++) {
+				double centerX = 0.5 * (edge.getSource().getGeometry().getX() + edge.getTarget().getGeometry().getX());
+				double centerY = 0.5 * (edge.getSource().getGeometry().getY() + edge.getTarget().getGeometry().getY());
+				double slope = (edge.getTarget().getGeometry().getY() - edge.getSource().getGeometry().getY()) /
+						(edge.getTarget().getGeometry().getX() - edge.getSource().getGeometry().getX());
+				double newSlope = -1.0 / slope;
+				mxCell axis = new mxCell();
+				mxCell source = new mxCell();
+				source.setGeometry(new mxGeometry(centerX, centerY, 0, 0));
+				axis.setSource(source);
+				mxCell target = new mxCell();
+				target.setGeometry(new mxGeometry(centerX + 10, centerY + newSlope * 10, 0, 0));
+				axis.setTarget(target);
+				
+				double sym = isMirrored(axis, edge, edges, tolerance);
+				if(sym > 0) {
+					subgraphSize += 1;
+					subSym += sym;
+				}
+			}
+			
+			if(subgraphSize >= minSymEdges) {
+				totalArea += subArea;
+				totalSym += subSym * subArea;
+			}
+		}
+		
+		double wholeArea = 0; //TODO calculate convex hull of graph
+		
+		return totalSym / Math.max(totalArea, wholeArea);
+	}
+	
+	//TODO return FRACTION when edges are not of same type
+	private static double isMirrored(mxCell axis, mxCell edge, Object[] edges, int tolerance) {
+		mxPoint start = mxGeometricUtils.mirror(axis, edge.getSource().getGeometry());
+		mxPoint end = mxGeometricUtils.mirror(axis, edge.getTarget().getGeometry());
+		
+		for(int i=0; i<edges.length; i++) {
+			mxCell edge2 = (mxCell) edges[i];
+			
+			double diffStartX = edge2.getSource().getGeometry().getX() - start.getX();
+			double diffStartY = edge2.getSource().getGeometry().getY() - start.getY();
+			double diffEndX = edge2.getTarget().getGeometry().getX() - end.getX();
+			double diffEndY = edge2.getTarget().getGeometry().getY() - end.getY();
+			double distanceStart = Math.sqrt(diffStartX * diffStartX + diffStartY * diffStartY);
+			double distanceEnd = Math.sqrt(diffEndX * diffEndX + diffEndY * diffEndY);
+			
+			if(distanceStart <= tolerance && distanceEnd <= tolerance)
+				return 1;
+			
+			// check differences in case target and source should be swapped
+			diffStartX = edge2.getTarget().getGeometry().getX() - start.getX();
+			diffStartY = edge2.getTarget().getGeometry().getY() - start.getY();
+			diffEndX = edge2.getSource().getGeometry().getX() - end.getX();
+			diffEndY = edge2.getSource().getGeometry().getY() - end.getY();
+			distanceStart = Math.sqrt(diffStartX * diffStartX + diffStartY * diffStartY);
+			distanceEnd = Math.sqrt(diffEndX * diffEndX + diffEndY * diffEndY);
+			
+			if(distanceStart <= tolerance && distanceEnd <= tolerance)
+				return 1;
+			
+		}
+		
+		return 0;
+	}
+	
 	
 	
 	

@@ -6,12 +6,12 @@ public class mxGeometricUtils {
 	
 	public static final double EPSILON = 1e-8;
 	
-	public static mxPoint mirror(mxCell edge, mxPoint point) {
-		double ax = edge.getSource().getGeometry().getX();
-		double ay = edge.getSource().getGeometry().getY();
+	public static mxPoint mirror(mxCell axis, mxPoint point) {
+		double ax = axis.getSource().getGeometry().getX();
+		double ay = axis.getSource().getGeometry().getY();
 		
-		double nx = edge.getTarget().getGeometry().getX() - ax;
-		double ny = edge.getTarget().getGeometry().getY() - ay;
+		double nx = axis.getTarget().getGeometry().getX() - ax;
+		double ny = axis.getTarget().getGeometry().getY() - ay;
 		double norm = Math.sqrt(nx * nx + ny * ny);
 		nx /= norm; ny /= norm;
 		

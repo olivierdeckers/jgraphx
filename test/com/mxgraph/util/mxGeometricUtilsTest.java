@@ -11,20 +11,19 @@ import com.mxgraph.model.mxGeometry;
 
 public class mxGeometricUtilsTest {
 	
-	private mxCell edge;
-	
 	@Before
 	public void setUp() throws Exception {
+	}
+	
+	public mxCell createEdge(double x1, double y1, double x2, double y2) {
 		mxCell start = new mxCell();
-		start.setVertex(true);
-		start.setGeometry(new mxGeometry(1, 1, 10, 10));
+		start.setGeometry(new mxGeometry(x1, y1, 0, 0));
 		mxCell end = new mxCell();
-		end.setVertex(true);
-		end.setGeometry(new mxGeometry(3, 2, 10, 10));
-		edge = new mxCell();
-		edge.setEdge(true);
+		end.setGeometry(new mxGeometry(x2, y2, 0, 0));
+		mxCell edge = new mxCell();
 		edge.setSource(start);
 		edge.setTarget(end);
+		return edge;
 	}
 
 	@After
@@ -33,6 +32,15 @@ public class mxGeometricUtilsTest {
 
 	@Test
 	public void testMirror() {
+		mxCell edge = createEdge(1, 1, 3, 2);
+		mxPoint point = mxGeometricUtils.mirror(edge, new mxPoint(2, 1));
+		assertEquals(1.6, point.getX(), 1e-8);
+		assertEquals(1.8, point.getY(), 1e-8);
+	}
+	
+	@Test
+	public void testMirrorAxisOriginBeyond() {
+		mxCell edge = createEdge(3, 2, 5, 3);
 		mxPoint point = mxGeometricUtils.mirror(edge, new mxPoint(2, 1));
 		assertEquals(1.6, point.getX(), 1e-8);
 		assertEquals(1.8, point.getY(), 1e-8);
