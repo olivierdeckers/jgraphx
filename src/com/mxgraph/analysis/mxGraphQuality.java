@@ -112,7 +112,7 @@ public class mxGraphQuality {
 				for(int j=i+1; j<vertex.getEdgeCount(); j++) {
 					mxCell b = (mxCell) vertex.getEdgeAt(j);
 					
-					double angle = calculateEdgeAngle(vertex, a, b);
+					double angle = mxGeometricUtils.calculateEdgeAngle(vertex, a, b);
 					
 					if(angle < angularResolution) {
 						angularResolution = angle;
@@ -126,27 +126,6 @@ public class mxGraphQuality {
 		return angularResolution / maxAngularResolution;
 	}
 	
-	private static double calculateEdgeAngle(mxCell vertex, mxCell a, mxCell b) {
-		mxCell aTarget = (mxCell) ((a.getSource() == vertex) ? a.getTarget() : a.getSource());
-		mxCell bTarget = (mxCell) ((b.getSource() == vertex) ? b.getTarget() : b.getSource());
-		
-		double ax = aTarget.getGeometry().getX() - vertex.getGeometry().getX();
-		double ay = aTarget.getGeometry().getY() - vertex.getGeometry().getY();
-		double bx = bTarget.getGeometry().getX() - vertex.getGeometry().getX();
-		double by = bTarget.getGeometry().getY() - vertex.getGeometry().getY();
-		
-		double norm = Math.sqrt(ax*ax + ay*ay);
-		ax /= norm;
-		ay /= norm;
-		
-		norm = Math.sqrt(bx*bx + by*by);
-		bx /= norm;
-		by /= norm;
-		
-		double dotProduct = ax * bx + ay * by;
-		return Math.acos(dotProduct);
-	}
-
 	public static double edgeBends(mxGraph graph) {
 		int m = graph.getChildEdges(graph.getDefaultParent()).length;
 		mxGraph bendPromotedGraph = bendPromotion(graph);

@@ -26,6 +26,27 @@ public class mxGeometricUtils {
 		return new mxPoint(resultX, resultY);
 	}
 	
+	public static double calculateEdgeAngle(mxCell vertex, mxCell a, mxCell b) {
+		mxCell aTarget = (mxCell) ((a.getSource() == vertex) ? a.getTarget() : a.getSource());
+		mxCell bTarget = (mxCell) ((b.getSource() == vertex) ? b.getTarget() : b.getSource());
+		
+		double ax = aTarget.getGeometry().getX() - vertex.getGeometry().getX();
+		double ay = aTarget.getGeometry().getY() - vertex.getGeometry().getY();
+		double bx = bTarget.getGeometry().getX() - vertex.getGeometry().getX();
+		double by = bTarget.getGeometry().getY() - vertex.getGeometry().getY();
+		
+		double norm = Math.sqrt(ax*ax + ay*ay);
+		ax /= norm;
+		ay /= norm;
+		
+		norm = Math.sqrt(bx*bx + by*by);
+		bx /= norm;
+		by /= norm;
+		
+		double dotProduct = ax * bx + ay * by;
+		return Math.acos(dotProduct);
+	}
+	
 	public static boolean segmentsIntersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
 		double d = (y4-y3) * (x2-x1) - (x4-x3) * (y2-y1);
 		
