@@ -1,6 +1,10 @@
 package com.mxgraph.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +48,27 @@ public class mxGeometricUtilsTest {
 		mxPoint point = mxGeometricUtils.mirror(edge, new mxPoint(2, 1));
 		assertEquals(1.6, point.getX(), 1e-8);
 		assertEquals(1.8, point.getY(), 1e-8);
+	}
+	
+	private List<Point> getPoints() {
+		ArrayList<Point> points = new ArrayList<Point>();
+		points.add(new Point(0, 0));
+		points.add(new Point(10,0));
+		points.add(new Point(10,10));
+		points.add(new Point(0,10));
+		points.add(new Point(5,5));
+		return points;
+	}
+	
+	@Test
+	public void testConvexHull() {
+		assertEquals(4, mxGeometricUtils.calculateConvexHull(getPoints()).size());
+	}
+	
+	@Test
+	public void testConvexArea() {
+		List<Point> hull = mxGeometricUtils.calculateConvexHull(getPoints());
+		assertEquals(100, mxGeometricUtils.calculateConvexArea(hull), 1e-5);
 	}
 
 }
