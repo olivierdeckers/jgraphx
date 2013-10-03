@@ -1,5 +1,7 @@
 package com.mxgraph.analysis;
 
+import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mxgraph.model.mxCell;
@@ -15,6 +17,7 @@ public class mxGraphQuality {
 		System.out.println("crossings: " + mxGraphQuality.edgeCrossings(graph));
 		System.out.println("bends: " + mxGraphQuality.edgeBends(graph));
 		System.out.println("angular resolution: " + mxGraphQuality.angularResolution(graph));
+		System.out.println("symmetry: " + mxGraphQuality.symmetry(graph));
 	}
 	
 	private static mxGraph bendPromotion(mxGraph graph) {
@@ -135,7 +138,7 @@ public class mxGraphQuality {
 	}
 	
 	public static double symmetry(mxGraph graph) {
-		return symmetry(graph, 3, 10);
+		return symmetry(graph, 2, 10);
 	}
 	
 	public static double symmetry(mxGraph graph, int minSymEdges, int tolerance) {
@@ -147,41 +150,54 @@ public class mxGraphQuality {
 		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
 		
 		for(int i=0; i<edges.length; i++) {
-			mxCell edge = (mxCell) edges[i];
+			mxCell axis = calculateAxis((mxCell) edges[i]);
 			
 			double subSym = 0;
-			double subArea = 0; //TODO calculate convex hull of subgraph
+			List<Point> subgraphPoints = new ArrayList<Point>();
 			int subgraphSize = 0;
 			for(int j=0; j<edges.length; j++) {
-				double centerX = 0.5 * (edge.getSource().getGeometry().getX() + edge.getTarget().getGeometry().getX());
-				double centerY = 0.5 * (edge.getSource().getGeometry().getY() + edge.getTarget().getGeometry().getY());
-				double slope = (edge.getTarget().getGeometry().getY() - edge.getSource().getGeometry().getY()) /
-						(edge.getTarget().getGeometry().getX() - edge.getSource().getGeometry().getX());
-				double newSlope = -1.0 / slope;
-				mxCell axis = new mxCell();
-				mxCell source = new mxCell();
-				source.setGeometry(new mxGeometry(centerX, centerY, 0, 0));
-				axis.setSource(source);
-				mxCell target = new mxCell();
-				target.setGeometry(new mxGeometry(centerX + 10, centerY + newSlope * 10, 0, 0));
-				axis.setTarget(target);
-				
+				mxCell edge = (mxCell) edges[j];
 				double sym = isMirrored(axis, edge, edges, tolerance);
 				if(sym > 0) {
 					subgraphSize += 1;
 					subSym += sym;
+					subgraphPoints.add(edge.getSource().getGeometry().getPoint());
+					subgraphPoints.add(edge.getTarget().getGeometry().getPoint());
 				}
 			}
 			
 			if(subgraphSize >= minSymEdges) {
+				subSym /= (double) subgraphSize;
+				double subArea = mxGeometricUtils.calculateConvexArea(mxGeometricUtils.calculateConvexHull(subgraphPoints));
 				totalArea += subArea;
 				totalSym += subSym * subArea;
 			}
 		}
 		
-		double wholeArea = 0; //TODO calculate convex hull of graph
+		Object[] vertices = graph.getChildVertices(graph.getDefaultParent());
+		List<Point> points = new ArrayList<Point>(vertices.length);
+		for(int i=0; i<vertices.length; i++) {
+			points.add(((mxCell) vertices[i]).getGeometry().getPoint());
+		}
+		double wholeArea = mxGeometricUtils.calculateConvexArea(mxGeometricUtils.calculateConvexHull(points));
 		
 		return totalSym / Math.max(totalArea, wholeArea);
+	}
+	
+	private static mxCell calculateAxis(mxCell edge) {
+		double centerX = 0.5 * (edge.getSource().getGeometry().getX() + edge.getTarget().getGeometry().getX());
+		double centerY = 0.5 * (edge.getSource().getGeometry().getY() + edge.getTarget().getGeometry().getY());
+		double slope = (edge.getTarget().getGeometry().getY() - edge.getSource().getGeometry().getY()) /
+				(edge.getTarget().getGeometry().getX() - edge.getSource().getGeometry().getX());
+		double newSlope = -1.0 / slope;
+		mxCell axis = new mxCell();
+		mxCell source = new mxCell();
+		source.setGeometry(new mxGeometry(centerX, centerY, 0, 0));
+		axis.setSource(source);
+		mxCell target = new mxCell();
+		target.setGeometry(new mxGeometry(centerX + 10, centerY + newSlope * 10, 0, 0));
+		axis.setTarget(target);
+		return axis;
 	}
 	
 	//TODO return FRACTION when edges are not of same type
@@ -199,8 +215,10 @@ public class mxGraphQuality {
 			double distanceStart = Math.sqrt(diffStartX * diffStartX + diffStartY * diffStartY);
 			double distanceEnd = Math.sqrt(diffEndX * diffEndX + diffEndY * diffEndY);
 			
-			if(distanceStart <= tolerance && distanceEnd <= tolerance)
+			if(distanceStart <= tolerance && distanceEnd <= tolerance) {
 				return 1;
+			}
+				
 			
 			// check differences in case target and source should be swapped
 			diffStartX = edge2.getTarget().getGeometry().getX() - start.getX();
@@ -210,9 +228,9 @@ public class mxGraphQuality {
 			distanceStart = Math.sqrt(diffStartX * diffStartX + diffStartY * diffStartY);
 			distanceEnd = Math.sqrt(diffEndX * diffEndX + diffEndY * diffEndY);
 			
-			if(distanceStart <= tolerance && distanceEnd <= tolerance)
+			if(distanceStart <= tolerance && distanceEnd <= tolerance) {
 				return 1;
-			
+			}
 		}
 		
 		return 0;
