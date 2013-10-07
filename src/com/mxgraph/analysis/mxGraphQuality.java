@@ -19,8 +19,29 @@ public class mxGraphQuality {
 		System.out.println("angular resolution: " + mxGraphQuality.angularResolution(graph));
 		System.out.println("symmetry: " + mxGraphQuality.symmetry(graph));
 		System.out.println("edge length deviation: " + mxGraphQuality.edgeLengthDeviation(graph));
+		System.out.println("edge orthogonality: " + mxGraphQuality.edgeOrthogonality(graph));
 	}
 	
+	public static double edgeOrthogonality(mxGraph graph) {
+		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+		
+		double sum = 0;
+		for(int i=0; i<edges.length; i++) {
+			mxCell edge = (mxCell) edges[i];
+			mxCell source = (mxCell) edge.getSource();
+			mxCell axis = new mxCell();
+			axis.setSource(source);
+			mxCell target = new mxCell();
+			target.setGeometry(new mxGeometry(source.getGeometry().getX() + 10, source.getGeometry().getY(), 0, 0));
+			axis.setTarget(target);
+			
+			double angle = mxGeometricUtils.calculateEdgeAngle(source, edge, axis);
+			sum += Math.min(angle, Math.min(Math.PI-angle, Math.abs(Math.PI/2.0-angle))) / (Math.PI / 4.0);
+		}
+		
+		return 1 - sum / (double) edges.length;
+	}
+
 	private static mxGraph bendPromotion(mxGraph graph) {
 		mxGraph copy = new mxGraph();
 		copy.addCells(graph.cloneCells(graph.getChildCells(graph.getDefaultParent())));
