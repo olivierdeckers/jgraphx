@@ -1,6 +1,7 @@
 package com.mxgraph.analysis;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,65 @@ public class mxGraphQuality {
 		System.out.println("symmetry: " + mxGraphQuality.symmetry(graph));
 		System.out.println("edge length deviation: " + mxGraphQuality.edgeLengthDeviation(graph));
 		System.out.println("edge orthogonality: " + mxGraphQuality.edgeOrthogonality(graph));
+		System.out.println("uniform vertex distribution: " + mxGraphQuality.vertexUniformity(graph));
 	}
 	
+	/**
+	 * Assess how uniformly vertices are distributed. A grid is laid over the graph,
+	 * and a Chi squared test is used to determine the uniformness of the vertex distribution.
+	 * 
+	 * @param graph
+	 * @return
+	 */
+	private static double vertexUniformity(mxGraph graph) {
+		Object[] vertices = graph.getChildVertices(graph.getDefaultParent());
+		
+		int resolution = 3;
+		int[][] sums = new int[resolution][resolution];
+		
+		double maxX = 0, minX = Integer.MAX_VALUE, maxY = 0, minY = Integer.MAX_VALUE;
+		for(int i=0; i<vertices.length; i++) {
+			mxCell v = (mxCell) vertices[i];
+			Point2D p = v.getGeometry().getPoint();
+			
+			if(p.getX() < minX)
+				minX = p.getX();
+			if(p.getX() > maxX)
+				maxX = p.getX()+1;
+			if(p.getY() < minY)
+				minY = p.getY();
+			if(p.getY() > maxY)
+				maxY = p.getY()+1;
+		}
+		
+		double squareWidth = (maxX - minX) / resolution;
+		double squareHeight = (maxY - minY) / resolution;
+		
+		for(int i=0; i<vertices.length; i++) {
+			mxCell v = (mxCell) vertices[i];
+			Point2D p = v.getGeometry().getPoint();
+			
+			int x = (int) ((p.getX() - minX) / squareWidth);
+			int y = (int) ((p.getY() - minY) / squareHeight);
+			
+			sums[x][y]++;
+		}
+		
+		double expectedVertsPerSquare = vertices.length / (double) (resolution * resolution);
+		double chi = 0;
+		for(int x = 0; x<resolution; x++) {
+			for(int y=0; y<resolution; y++) {
+				chi += (sums[x][y] - expectedVertsPerSquare) * (sums[x][y] - expectedVertsPerSquare) / expectedVertsPerSquare;
+			}
+		}
+		
+		// max chi value when all vertices except one are in the same square:
+		double maxChi = (vertices.length - 1 - expectedVertsPerSquare) * (vertices.length - 1 - expectedVertsPerSquare) / expectedVertsPerSquare
+				+ (resolution * resolution - 1) * expectedVertsPerSquare;
+		
+		return 1 - (chi / maxChi);
+	}
+
 	public static double edgeOrthogonality(mxGraph graph) {
 		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
 		
