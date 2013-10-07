@@ -18,6 +18,7 @@ public class mxGraphQuality {
 		System.out.println("bends: " + mxGraphQuality.edgeBends(graph));
 		System.out.println("angular resolution: " + mxGraphQuality.angularResolution(graph));
 		System.out.println("symmetry: " + mxGraphQuality.symmetry(graph));
+		System.out.println("edge length deviation: " + mxGraphQuality.edgeLengthDeviation(graph));
 	}
 	
 	private static mxGraph bendPromotion(mxGraph graph) {
@@ -234,6 +235,31 @@ public class mxGraphQuality {
 		}
 		
 		return 0;
+	}
+	
+	public static double edgeLengthDeviation(mxGraph graph) {
+		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+		double[] lengths = new double[edges.length];
+		double mean = 0;
+		double maxLength = 0;
+		for(int i=0; i<edges.length; i++) {
+			mxCell edge = (mxCell) edges[i];
+			lengths[i] = edge.getSource().getGeometry().getPoint().distance(edge.getTarget().getGeometry().getPoint());
+			mean += lengths[i];
+			if(lengths[i] > maxLength)
+				maxLength = lengths[i];
+		}
+		mean /= (double) lengths.length;
+		
+		double std = 0;
+		for(double length : lengths) {
+			std += (length - mean) * (length - mean);
+		}
+		std /= (double) lengths.length;
+		std = Math.sqrt(std);
+		
+		// maxlength/2 is an upper bound for std
+		return 1 - (std / (maxLength/2.0));
 	}
 	
 	
