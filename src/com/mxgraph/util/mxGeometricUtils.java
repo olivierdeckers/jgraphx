@@ -1,12 +1,11 @@
 package com.mxgraph.util;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import com.mxgraph.model.mxCell;
 
@@ -70,6 +69,20 @@ public class mxGeometricUtils {
 			return false;
 		
 		return true;
+	}
+	
+	public static double pointLineDistance(Point2D point, Point2D lineStart, Point2D lineEnd) {
+		double nx = lineEnd.getX() - lineStart.getX();
+		double ny = lineEnd.getY() - lineStart.getY();
+		double norm = Math.sqrt(nx * nx + ny * ny);
+		nx /= norm; ny /= norm;
+		
+		double dot = (lineStart.getX() - point.getX()) * nx + 
+				(lineStart.getY() - point.getY()) * ny;
+		double dx = lineStart.getX() - point.getX() - dot * nx;
+		double dy = lineStart.getY() - point.getY() - dot * ny;
+		
+		return Math.sqrt(dx * dx + dy * dy);
 	}
 	
 	/**

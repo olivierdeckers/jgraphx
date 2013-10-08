@@ -22,6 +22,37 @@ public class mxGraphQuality {
 		System.out.println("edge length deviation: " + mxGraphQuality.edgeLengthDeviation(graph));
 		System.out.println("edge orthogonality: " + mxGraphQuality.edgeOrthogonality(graph));
 		System.out.println("uniform vertex distribution: " + mxGraphQuality.vertexUniformity(graph));
+		System.out.println("node edge distance: " + mxGraphQuality.nodeEdgeDistance(graph));
+	}
+	
+	public static double nodeEdgeDistance(mxGraph graph) {
+		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+		Object[] vertices = graph.getChildVertices(graph.getDefaultParent());
+		
+		double minDistance = Double.MAX_VALUE;
+		double maxDistance = 0;
+		for(int v = 0; v<vertices.length; v++) {
+			mxCell vertex = (mxCell) vertices[v];
+			for(int e=0; e<edges.length; e++) {
+				mxCell edge = (mxCell) edges[e];
+				
+				if(vertex.getEdgeIndex(edge) >= 0)
+					continue;
+
+				double distance = mxGeometricUtils.pointLineDistance(
+						vertex.getGeometry().getPoint(), 
+						edge.getSource().getGeometry().getPoint(), 
+						edge.getTarget().getGeometry().getPoint());
+				
+				if(distance < minDistance)
+					minDistance = distance;
+				if(distance > maxDistance)
+					maxDistance = distance;
+			}
+		}
+		
+		// third root to make sure only graphs with very small mindistance are penalised heavily
+		return Math.pow(minDistance / maxDistance, 1/3.0);
 	}
 	
 	/**
@@ -31,7 +62,7 @@ public class mxGraphQuality {
 	 * @param graph
 	 * @return
 	 */
-	private static double vertexUniformity(mxGraph graph) {
+	public static double vertexUniformity(mxGraph graph) {
 		Object[] vertices = graph.getChildVertices(graph.getDefaultParent());
 		
 		int resolution = 3;

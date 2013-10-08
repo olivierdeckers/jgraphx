@@ -3,6 +3,7 @@ package com.mxgraph.util;
 import static org.junit.Assert.assertEquals;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +70,11 @@ public class mxGeometricUtilsTest {
 	public void testConvexArea() {
 		List<Point> hull = mxGeometricUtils.calculateConvexHull(getPoints());
 		assertEquals(100, mxGeometricUtils.calculateConvexArea(hull), 1e-5);
+	}
+	
+	@Test
+	public void testPointLineDistance() {
+		assertEquals(Math.sqrt(2)/2, mxGeometricUtils.pointLineDistance(new Point2D.Double(0,0), new Point2D.Double(1,0), new Point2D.Double(0,1)), 1e-10);
 	}
 
 }
